@@ -1,4 +1,6 @@
-### Testnachricht an Github.
+#
+
+print("Some simple code.")
 
 library(foreign)
 library(dplyr)
@@ -183,4 +185,4 @@ fr_excol_sm_loggdppc1995_high <- fr_excol_sm_loggdppc1995 %>%
             sd_fr_excol_sm_loggdppc1995_high = sd(loggdppc1995))
 paste(fr_excol_sm_loggdppc1995_high)
 
-### Probierecke: ####
+### Probierecke: #### 
