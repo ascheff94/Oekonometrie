@@ -1,9 +1,6 @@
-#
-
-print("Some simple code.")
-
 library(foreign)
 library(dplyr)
+library(tidyverse)
 library(ggplot2)
 
 c_data <- read.dta("unbundle.dta")
@@ -72,6 +69,20 @@ world_sdformalism <- c_data %>%
   summarize(mean_world_sdformalism = mean(sdformalism),
             sd_world_sdformalism = sd(sdformalism))
 paste(world_sdformalism)
+
+### def function für World Sample: ####
+
+world_sample <- function(dataframe, column_name){
+  y <- dataframe %>%
+    select(country, {{column_name}}) %>%
+    filter(is.na({{column_name}}) == FALSE) %>%
+    summarise(mean_world = mean({{column_name}}),
+              sd_world = sd({{column_name}}))
+  paste(y)
+}
+
+world_sample(dataframe = c_data, column_name = sdformalism)
+world_sample(dataframe = c_data, column_name = ecproccompindex)
 
 # Column: Ex-Colonies Sample (ex2col)
 
