@@ -1,3 +1,5 @@
+### Intro ####
+
 library(foreign)
 library(dplyr)
 library(tidyverse)
@@ -59,17 +61,7 @@ browseVignettes(package = "dplyr")
 # select(!c(lat_abst, rich4, logavgcpinflat7098, averagegovsh5, avgbereale7098,
 #          catho80, muslim80, protmg80, no_cpm80))
 #
-### Testing reproducing Table 1, row = legal formalism: ####
 #
-# Column: World Sample
-
-world_sdformalism <- c_data %>%
-  select(country, sdformalism) %>%
-  filter(is.na(sdformalism) == FALSE) %>%
-  summarize(mean_world_sdformalism = mean(sdformalism),
-            sd_world_sdformalism = sd(sdformalism))
-paste(world_sdformalism)
-
 ### def function für World Sample: ####
 
 world_sample <- function(dataframe, column_name){
@@ -82,118 +74,108 @@ world_sample <- function(dataframe, column_name){
 }
 
 world_sample(dataframe = c_data, column_name = sdformalism)
-world_sample(dataframe = c_data, column_name = ecproccompindex)
 
-# Column: Ex-Colonies Sample (ex2col)
+### def function Ex-Colonies Sample (ex2col): ####
 
-ex2col_sdformalism <- c_data %>%
-  select(country, ex2col, sdformalism) %>%
-  filter(ex2col == 1, is.na(sdformalism) == FALSE) %>%
-  summarize(mean_ex2col_sdformalism = mean(sdformalism),
-            sd_ex2col_sdformalism = sd(sdformalism))
-paste(ex2col_sdformalism)
+ex2col <- function(dataframe, column_name){
+  y <- dataframe %>%
+    select(country, ex2col, {{column_name}}) %>%
+    filter(ex2col == 1, is.na({{column_name}}) == FALSE) %>%
+    summarise(mean_ex2col = mean({{column_name}}),
+              sd_ex2col = sd({{column_name}}))
+  paste(y)
+}
 
-# Column: English Ex-Colonies (sjlouk)
+ex2col(dataframe = c_data, column_name = avgci1990s)
 
-uk_excol_sdformalism <- c_data %>%
-  select(country, sjlouk, ex2col, sdformalism) %>%
-  filter(sjlouk == 1, ex2col == 1, is.na(sdformalism) == FALSE) %>%
-  summarise(mean_uk_excol_sdformalism = mean(sdformalism),
-            sd_uk_excol_sdformalism = sd(sdformalism))
-paste(uk_excol_sdformalism)
+### def function English Ex-Colonies Sample (sjlouk): ####
 
-# Column: English Ex-Colonies: Low Settler Mortality
+excol_uk <- function(dataframe, column_name){
+  y <- dataframe %>%
+    select(country, sjlouk, ex2col, {{column_name}}) %>%
+    filter(sjlouk == 1, ex2col == 1, is.na({{column_name}}) == FALSE) %>%
+    summarise(mean_excol_uk = mean({{column_name}}),
+              sd_excol_uk = sd({{column_name}}))
+  paste(y)
+}
 
-uk_excol_sm_sdformalism <- c_data %>%
-  select(country, sjlouk, ex2col, logem4, sdformalism) %>%
-  filter(sjlouk == 1, ex2col == 1, is.na(logem4) == FALSE)
-median_logem4_uk <- median(uk_excol_sm_sdformalism$logem4)
-uk_excol_sm_sdformalism_low <- uk_excol_sm_sdformalism %>%
-  filter(logem4 <= median_logem4_uk, is.na(sdformalism) == FALSE) %>%
-  summarise(mean_uk_excol_sm_sdformalism_low = mean(sdformalism),
-            sd_uk_excol_sm_sdformalism_low = sd(sdformalism))
-paste(uk_excol_sm_sdformalism_low)
+excol_uk(dataframe = c_data, column_name = loggdppc1995)
 
-# Column: English Ex-Colonies: High Settler Mortality
+### def function English Ex-Colonies: Low Setter Mortality: ####
 
-uk_excol_sm_sdformalism <- c_data %>%
-  select(sjlouk, ex2col, logem4, sdformalism) %>%
-  filter(sjlouk == 1, ex2col == 1, is.na(logem4) == FALSE)
-median_logem4_uk <- median(uk_excol_sm_sdformalism$logem4)
-uk_excol_sm_sdformalism_high <- uk_excol_sm_sdformalism %>%
-  filter(logem4 > median_logem4_uk, is.na(sdformalism) == FALSE) %>%
-  summarise(mean_uk_excol_sm_sdformalism_high = mean(sdformalism),
-            sd_uk_excol_sm_sdformalism_high = sd(sdformalism))
-paste(uk_excol_sm_sdformalism_high)
+excol_uk_sm_low <- function(dataframe, column_name){
+  y <- dataframe %>%
+    select(country, sjlouk, ex2col, logem4, {{column_name}}) %>%
+    filter(sjlouk == 1, ex2col == 1, is.na(logem4) == FALSE)
+  median_logem4_uk <- median(y$logem4)
+  excol_uk_low <- y %>%
+    filter(logem4 <= median_logem4_uk, is.na({{column_name}}) == FALSE) %>%
+    summarise(mean_excol_uk_low = mean({{column_name}}),
+              sd_excol_uk_low = sd({{column_name}}))
+  paste(excol_uk_low)
+}
 
-# Column: French Ex-Colonies (sjlofr)
+excol_uk_sm_low(dataframe = c_data, column_name = sdformalism)
 
-fr_excol_sdformalism <- c_data %>%
-  filter(sjlofr == 1, ex2col == 1, is.na(sdformalism) == FALSE) %>%
-  summarise(mean_fr_excol_sdformalism = mean(sdformalism),
-            sd_fr_excol_sdformalism = sd(sdformalism))
-paste(fr_excol_sdformalism)
+### def function English Ex-Colonies: High Settler Mortality: ####
 
-# Column: French Ex-Colonies: Low Settler Mortality
+excol_uk_sm_high <- function(dataframe, column_name){
+  y <- dataframe %>%
+    select(country, sjlouk, ex2col, logem4, {{column_name}}) %>%
+    filter(sjlouk == 1, ex2col == 1, is.na(logem4) == FALSE)
+  median_logem4_uk <- median(y$logem4)
+  excol_uk_high <- y %>%
+    filter(logem4 > median_logem4_uk, is.na({{column_name}}) == FALSE) %>%
+    summarise(mean_excol_uk_high = mean({{column_name}}),
+              sd_excol_uk_high = sd({{column_name}}))
+  paste(excol_uk_high)
+}
 
-fr_excol_sm_sdformalism <- c_data %>%
-  select(country, sjlofr, ex2col, logem4, sdformalism) %>%
-  filter(sjlofr == 1, ex2col == 1, is.na(logem4) == FALSE)
-median_logem4_fr <- median(fr_excol_sm_sdformalism$logem4)
-fr_excol_sm_sdformalism_low <- fr_excol_sm_sdformalism %>%
-  filter(logem4 <= median_logem4_fr, is.na(sdformalism) == FALSE) %>%
-  summarise(mean_fr_excol_sm_sdformalism_low = mean(sdformalism),
-            sd_fr_excol_sm_sdformalism_low = sd(sdformalism))
-paste(fr_excol_sm_sdformalism_low)
+excol_uk_sm_high(dataframe = c_data, column_name = lpd1500s)
 
-# Column: French Ex-Colonies: High Settler Mortality
+### def function French Ex-Colonies Sample (sjlofr): ####
 
-fr_excol_sm_sdformalism <- c_data %>%
-  select(country, sjlofr, ex2col, logem4, sdformalism) %>%
-  filter(sjlofr == 1, ex2col == 1, is.na(logem4) == FALSE)
-median_logem4_fr <- median(fr_excol_sm_sdformalism$logem4)
-fr_excol_sm_sdformalism_high <- fr_excol_sm_sdformalism %>%
-  filter(logem4 > median_logem4_fr, is.na(sdformalism) == FALSE) %>%
-  summarise(mean_fr_excol_sm_sdformalism_high = mean(sdformalism),
-            sd_fr_excol_sm_sdformalism_high = sd(sdformalism))
-paste(fr_excol_sm_sdformalism_high)
+excol_fr <- function(dataframe, column_name){
+  y <- dataframe %>%
+    select(country, sjlofr, ex2col, {{column_name}}) %>%
+    filter(sjlofr == 1, ex2col == 1, is.na({{column_name}}) == FALSE) %>%
+    summarise(mean_excol_fr = mean({{column_name}}),
+              sd_excol_fr = sd({{column_name}}))
+  paste(y)
+}
 
-### Test auf Genauigkeit: ####
-### bei Log GDP per capita in 1995 (PPP measure) auf English Ex-Colonies, 
-### English Ex-Colonies with low settler mortality und French Ex-Colonies 
-### with high settler mortality
+excol_fr(dataframe = c_data, column_name = loggdppc1995)
 
-# Column: English Ex-Colonies:
+### def function French Ex-Colonies: Low Settler Mortality: ####
 
-uk_excol_loggdppc1995 <- c_data %>%
-  select(country, sjlouk, ex2col, loggdppc1995) %>%
-  filter(sjlouk == 1, ex2col == 1, is.na(loggdppc1995) == FALSE) %>%
-  summarise(mean_uk_excol_loggdppc1995 = mean(loggdppc1995),
-            sd_uk_excol_loggdppc1995 = sd(loggdppc1995))
-paste(uk_excol_loggdppc1995)
+excol_fr_sm_low <- function(dataframe, column_name){
+  y <- dataframe %>%
+    select(country, sjlofr, ex2col, logem4, {{column_name}}) %>%
+    filter(sjlofr == 1, ex2col == 1, is.na(logem4) == FALSE)
+  median_logem4_fr <- median(y$logem4)
+  excol_fr_low <- y %>%
+    filter(logem4 <= median_logem4_fr, is.na({{column_name}}) == FALSE) %>%
+    summarise(mean_excol_fr_low = mean({{column_name}}),
+              sd_excol_fr_low = sd({{column_name}}))
+  paste(excol_fr_low)
+}
 
-# Column: English Ex-Colonies with low settler mortality:
+excol_fr_sm_low(dataframe = c_data, column_name = sdformalism)
 
-uk_excol_sm_loggdppc1995 <- c_data %>%
-  select(country, sjlouk, ex2col, logem4, loggdppc1995) %>%
-  filter(sjlouk == 1, ex2col == 1, is.na(logem4) == FALSE)
-median_logem4_uk <- median(uk_excol_sm_loggdppc1995$logem4)
-uk_excol_sm_loggdppc1995_low <- uk_excol_sm_loggdppc1995 %>%
-  filter(logem4 <= median_logem4_uk, is.na(loggdppc1995) == FALSE) %>%
-  summarise(mean_uk_excol_sm_loggdppc1995_low = mean(loggdppc1995),
-            sd_uk_excol_sm_loggdppc1995_low = sd(loggdppc1995))
-paste(uk_excol_sm_loggdppc1995_low)
+### def function French Ex-Colonies: High Settler Mortality: ####
 
-# Column: French Ex-Colonies with high settler mortality:
+excol_fr_sm_high <- function(dataframe, column_name){
+  y <- dataframe %>%
+    select(country, sjlofr, ex2col, logem4, {{column_name}}) %>%
+    filter(sjlofr == 1, ex2col == 1, is.na(logem4) == FALSE)
+  median_logem4_fr <- median(y$logem4)
+  excol_fr_high <- y %>%
+    filter(logem4 > median_logem4_fr, is.na({{column_name}}) == FALSE) %>%
+    summarise(mean_excol_fr_high = mean({{column_name}}),
+              sd_excol_fr_high = sd({{column_name}}))
+  paste(excol_fr_high)
+}
 
-fr_excol_sm_loggdppc1995 <- c_data %>%
-  select(country, sjlofr, ex2col, logem4, loggdppc1995) %>%
-  filter(sjlofr == 1, ex2col == 1, is.na(logem4) == FALSE)
-median_logem4_fr <- median(fr_excol_sm_loggdppc1995$logem4)
-fr_excol_sm_loggdppc1995_high <- fr_excol_sm_loggdppc1995 %>%
-  filter(logem4 > median_logem4_fr, is.na(loggdppc1995) == FALSE) %>%
-  summarise(mean_fr_excol_sm_loggdppc1995_high = mean(loggdppc1995),
-            sd_fr_excol_sm_loggdppc1995_high = sd(loggdppc1995))
-paste(fr_excol_sm_loggdppc1995_high)
+excol_fr_sm_high(dataframe = c_data, column_name = lpd1500s)
 
 ### Probierecke: #### 
