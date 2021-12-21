@@ -4,15 +4,11 @@ library(foreign)
 library(dplyr)
 library(tidyverse)
 library(ggplot2)
+library(ivreg)
 
 c_data <- read.dta("unbundle.dta")
 f_data <- read.dta("unbundle_firm.dta")
 attach(c_data)
-attach(f_data)
-
-summary(c_data)
-
-browseVignettes(package = "dplyr")
 
 ### Relevante Variablen ####
 #
@@ -61,8 +57,8 @@ browseVignettes(package = "dplyr")
 # select(!c(lat_abst, rich4, logavgcpinflat7098, averagegovsh5, avgbereale7098,
 #          catho80, muslim80, protmg80, no_cpm80))
 #
-#
-### def function für World Sample: ####
+### Table 1 Funktionen: ####
+### def function für World Sample:
 
 world_sample <- function(dataframe, column_name){
   y <- dataframe %>%
@@ -72,10 +68,7 @@ world_sample <- function(dataframe, column_name){
               sd_world = sd({{column_name}}))
   paste(y)
 }
-
-world_sample(dataframe = c_data, column_name = sdformalism)
-
-### def function Ex-Colonies Sample (ex2col): ####
+### def function Ex-Colonies Sample (ex2col):
 
 ex2col <- function(dataframe, column_name){
   y <- dataframe %>%
@@ -85,10 +78,7 @@ ex2col <- function(dataframe, column_name){
               sd_ex2col = sd({{column_name}}))
   paste(y)
 }
-
-ex2col(dataframe = c_data, column_name = avgci1990s)
-
-### def function English Ex-Colonies Sample (sjlouk): ####
+### def function English Ex-Colonies Sample (sjlouk):
 
 excol_uk <- function(dataframe, column_name){
   y <- dataframe %>%
@@ -98,10 +88,7 @@ excol_uk <- function(dataframe, column_name){
               sd_excol_uk = sd({{column_name}}))
   paste(y)
 }
-
-excol_uk(dataframe = c_data, column_name = loggdppc1995)
-
-### def function English Ex-Colonies: Low Setter Mortality: ####
+### def function English Ex-Colonies: Low Setter Mortality:
 
 excol_uk_sm_low <- function(dataframe, column_name){
   y <- dataframe %>%
@@ -114,10 +101,7 @@ excol_uk_sm_low <- function(dataframe, column_name){
               sd_excol_uk_low = sd({{column_name}}))
   paste(excol_uk_low)
 }
-
-excol_uk_sm_low(dataframe = c_data, column_name = sdformalism)
-
-### def function English Ex-Colonies: High Settler Mortality: ####
+### def function English Ex-Colonies: High Settler Mortality:
 
 excol_uk_sm_high <- function(dataframe, column_name){
   y <- dataframe %>%
@@ -130,10 +114,7 @@ excol_uk_sm_high <- function(dataframe, column_name){
               sd_excol_uk_high = sd({{column_name}}))
   paste(excol_uk_high)
 }
-
-excol_uk_sm_high(dataframe = c_data, column_name = lpd1500s)
-
-### def function French Ex-Colonies Sample (sjlofr): ####
+### def function French Ex-Colonies Sample (sjlofr):
 
 excol_fr <- function(dataframe, column_name){
   y <- dataframe %>%
@@ -143,10 +124,7 @@ excol_fr <- function(dataframe, column_name){
               sd_excol_fr = sd({{column_name}}))
   paste(y)
 }
-
-excol_fr(dataframe = c_data, column_name = loggdppc1995)
-
-### def function French Ex-Colonies: Low Settler Mortality: ####
+### def function French Ex-Colonies: Low Settler Mortality:
 
 excol_fr_sm_low <- function(dataframe, column_name){
   y <- dataframe %>%
@@ -159,10 +137,7 @@ excol_fr_sm_low <- function(dataframe, column_name){
               sd_excol_fr_low = sd({{column_name}}))
   paste(excol_fr_low)
 }
-
-excol_fr_sm_low(dataframe = c_data, column_name = sdformalism)
-
-### def function French Ex-Colonies: High Settler Mortality: ####
+### def function French Ex-Colonies: High Settler Mortality:
 
 excol_fr_sm_high <- function(dataframe, column_name){
   y <- dataframe %>%
@@ -175,7 +150,81 @@ excol_fr_sm_high <- function(dataframe, column_name){
               sd_excol_fr_high = sd({{column_name}}))
   paste(excol_fr_high)
 }
+### Table 2, Panel A&B:  ####
+#
+# Dependent Variables:    -Log GDP per Capita in 1995 (Panel A)
+#                           [loggdppc1995]
+#                         -Average Ratio of Investment to GDP in 1990s (Panel A)
+#                           [avgci1990s]
+#                         -Credit to the Private Sector (Panel B)
+#                           [credittops1998]
+#                         -Stock Market Capitalization, Average Over '90 - '95 (Panel B)
+#                           [mcapsj]
+#
+# Explanatory Variables:  -Legal Formalism [sdformalism]
+#                         -Procedural Complexity [ecproccompindex]
+#                         -Number of Procedures [ecnumprocedures]
+#
+# World OLS:
 
-excol_fr_sm_high(dataframe = c_data, column_name = lpd1500s)
+Table_2_World_Sample_OLS <- function(dep_var, exp_var){
+  x <- lm({{dep_var}}~ {{exp_var}}, data = c_data)
+  x <- summary(x)
+  print(x)
+}
+
+# Example: 
+
+Table_2_World_Sample(dep_var = loggdppc1995, exp_var = sdformalism)
+
+# Excol OLS:
+
+Table_2_Excol_OLS <- function(dep_var, exp_var){
+  x <- lm({{dep_var}}~ {{exp_var}}, data = c_data, subset = ex2col == 1)
+  x <- summary(x)
+  print(x)
+}
+
+# Example: 
+
+Table_2_Excol_OLS(dep_var = loggdppc1995, exp_var = sdformalism)
+
+# Excol 2SLS:
+
+Table_2_Excol_2SLS <- function(dep_var, exp_var){
+  x <- ivreg({{dep_var}}~ {{exp_var}} | sjlouk, data = c_data, subset = ex2col == 1)
+  x2 <- summary(x)
+  print(x2)
+}
+
+# Example: 
+
+Table_2_Excol_2SLS(dep_var = loggdppc1995, exp_var = sdformalism)
+
+### Table 3, Panel A: ####
+#
+# Dependent Variables:    -Legal Formalism [sdformalism]
+#                         -Procedural Complexity [ecproccompindex]
+#                         -Number of Procedures [ecnumprocedures]
+#
+# Explanatory Variables:  -Log Settler Mortality [logem4]
+#                         -Log Population Density in 1500 [lpd1500s]
+#
 
 ### Probierecke: #### 
+
+Table_3_Panel_A <- function(dep_var, exp_var){
+  x <- lm({{dep_var}}~ sjlouk + {{exp_var}}, data = c_data, subset = ex2col == 1)
+  x2 <- summary(x)
+  print(x2)
+}
+
+help(ivreg)
+
+Table_3_Panel_A(dep_var = sdformalism, exp_var = logem4)
+
+Test <- c_data %>%
+  filter(ex2col == 1)
+x <- lm(sdformalism~ sjlouk + logem4, data = Test)
+x2 <- summary(x)
+print(x2)
