@@ -225,6 +225,7 @@ Table_3_Panel_A(dep_var = sdformalism, exp_var = logem4)
 
 Test <- c_data %>%
   filter(ex2col == 1)
+
 x <- lm(sdformalism~ sjlouk + logem4, data = Test)
 x2 <- summary(x)
 print(x2)
